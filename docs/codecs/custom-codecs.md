@@ -248,11 +248,10 @@ decode[User]("""{"firstName": "Foo", "lastName": "Bar", "likesCats": true}""")
 
 ### Union types (Scala 3)
 
-Scala 3 union types are supported through an opt-in import. Values are encoded without a discriminator:
+Scala 3 union types are supported out of the box. Values are encoded without a discriminator:
 
 ```scala
 import io.circe.*, io.circe.syntax.*
-import io.circe.union.given
 
 val x: Int | String = "foo"
 x.asJson                                 // "foo"

@@ -18,27 +18,8 @@ package io.circe
 
 import scala.quoted.*
 
-/**
- * Opt-in support for Scala 3 union types, encoded without a discriminator.
- *
- * {{{
- *   import io.circe.union.given
- *
- *   (1: Int | String).asJson           // 1
- *   Json.fromString("a").as[Int | String]  // Right("a")
- * }}}
- *
- * Encoding picks the first member (in declaration order) whose runtime type matches the value;
- * decoding tries each member in declaration order and returns the first success.
- * Members that share the same erased class (e.g. `List[Int] | List[String]`) are rejected at compile time.
- */
-object union:
-
-  inline given unionEncoder[A, B]: Encoder[A | B] = ${ encoderImpl[A | B] }
-  inline given unionDecoder[A, B]: Decoder[A | B] = ${ decoderImpl[A | B] }
-  inline given unionCodec[A, B]: Codec[A | B] = Codec.from(unionDecoder[A, B], unionEncoder[A, B])
-
-  private def members[T: Type](using q: Quotes): List[q.reflect.TypeRepr] =
+private[circe] object UnionMacros:
+  def members[T: Type](using q: Quotes): List[q.reflect.TypeRepr] =
     import quotes.reflect.*
     def go(t: TypeRepr): List[TypeRepr] = t.dealias match
       case OrType(l, r) => go(l) ::: go(r)
@@ -52,7 +33,7 @@ object union:
     }
     ms
 
-  private def encoderImpl[T: Type](using Quotes): Expr[Encoder[T]] =
+  def encoder[T: Type](using Quotes): Expr[Encoder[T]] =
     import quotes.reflect.*
     val cases: List[Expr[(Any => Boolean, Encoder[Any])]] = members[T].map { m =>
       m.asType match
@@ -71,7 +52,7 @@ object union:
           case None           => throw new IllegalArgumentException(s"No union member matches value: $a")
     }
 
-  private def decoderImpl[T: Type](using Quotes): Expr[Decoder[T]] =
+  def decoder[T: Type](using Quotes): Expr[Decoder[T]] =
     import quotes.reflect.*
     val cases: List[Expr[Decoder[Any]]] = members[T].map { m =>
       m.asType match
@@ -97,3 +78,4 @@ object union:
               case Left(e)  => errors = s"$n: ${e.message}" :: errors
           Left(DecodingFailure(s"Could not decode as any union member (${errors.reverse.mkString("; ")})", c.history))
     }
+  

@@ -20,7 +20,6 @@ import io.circe.syntax.*
 import io.circe.tests.CirceMunitSuite
 
 class UnionSuite extends CirceMunitSuite:
-  import union.given
 
   case class A(a: Int) derives Codec.AsObject
   case class B(b: String) derives Codec.AsObject
