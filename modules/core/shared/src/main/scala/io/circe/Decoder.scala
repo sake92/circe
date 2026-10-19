@@ -477,6 +477,7 @@ object Decoder
     with ProductDecoders
     with LiteralDecoders
     with EnumerationDecoders
+    with UnionDecoders
     with LowPriorityDecoders {
 
   /**

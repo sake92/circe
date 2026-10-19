@@ -245,3 +245,19 @@ case class User(firstName: String, lastName: String)
 
 decode[User]("""{"firstName": "Foo", "lastName": "Bar", "likesCats": true}""")
 ```
+
+### Union types (Scala 3)
+
+Scala 3 union types are supported out of the box. Values are encoded without a discriminator:
+
+```scala
+import io.circe.*, io.circe.syntax.*
+
+val x: Int | String = "foo"
+x.asJson                                 // "foo"
+Json.fromInt(1).as[Int | String]         // Right(1)
+```
+
+Encoding picks the first member (in declaration order) whose runtime type matches the value.
+Decoding tries each member in declaration order and returns the first success, so put more specific members first.
+Members with the same runtime class (e.g. `List[Int] | List[String]`) are rejected at compile time.

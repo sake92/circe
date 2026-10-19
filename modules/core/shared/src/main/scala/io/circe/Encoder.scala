@@ -140,6 +140,7 @@ object Encoder
     with ProductTypedEncoders
     with LiteralEncoders
     with EnumerationEncoders
+    with UnionEncoders
     with MidPriorityEncoders
     with EncoderDerivationRelaxed {
 
